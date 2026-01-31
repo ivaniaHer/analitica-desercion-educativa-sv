@@ -11,23 +11,6 @@
 
 ---
 
-## Tabla de Contenidos
-
-- [Descripción del Proyecto](#-descripción-del-proyecto)
-- [Objetivo del Proyecto](#-objetivo-del-proyecto)
-- [Alcance Actual](#-alcance-actual)
-- [Modelo de Datos](#-modelo-de-datos)
-- [Diseño Analítico y Visualización](#-diseño-analítico-y-visualización)
-- [Tipos de Análisis](#-tipos-de-análisis)
-- [Indicadores Clave](#-indicadores-clave)
-- [Filtros y Segmentaciones](#-filtros-y-segmentaciones)
-- [Tecnologías Utilizadas](#-tecnologías-utilizadas)
-- [Plan de Implementación de IA](#-plan-de-implementación-de-ia)
-- [Limitaciones del Análisis](#-limitaciones-del-análisis)
-- [Resultados Esperados](#-resultados-esperados)
-
----
-
 ## Descripción del Proyecto
 
 Este proyecto analiza el desempeño académico y el riesgo de deserción de estudiantes de educación media en El Salvador, considerando factores **académicos, socioeconómicos y tecnológicos**.
