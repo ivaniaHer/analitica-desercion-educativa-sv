@@ -153,6 +153,7 @@ Clasificación del riesgo de deserción mediante modelos sencillos de Machine Le
 - Python  
 - pandas, numpy  
 - scikit-learn  
+- sqlachemy, pymysql
 
 ### Control de Versiones
 - Git / GitHub  
