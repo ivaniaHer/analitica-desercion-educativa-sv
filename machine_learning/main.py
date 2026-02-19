@@ -1,55 +1,38 @@
 """
-Script principal para el entrenamiento, evaluación y comparación
-de modelos de clasificación orientados a la predicción del riesgo
-de deserción estudiantil.
-
-Flujo general del proceso:
-
-1. Conexión a base de datos MySQL y carga de datos desde la vista 'dataset_ml'.
-2. Análisis exploratorio básico: visualización de la distribución
-   de la variable objetivo 'riesgo_desercion'.
-3. Preprocesamiento de datos mediante la función preparar_datos().
-4. Entrenamiento y evaluación de modelos supervisados:
-   - Decision Tree
-   - Random Forest
-   - Logistic Regression (con escalamiento previo)
-5. Análisis de coeficientes del modelo de Regresión Logística
-   para interpretación de variables.
-6. Evaluación comparativa de un modelo heurístico basado en reglas
-   (modelo_scoring) frente a los datos reales.
-
-Modelos utilizados:
-- Árbol de Decisión
-- Random Forest
-- Regresión Logística
-- Modelo heurístico de puntuación
-
-El objetivo es comparar desempeño predictivo y analizar
-la importancia de variables en el riesgo de deserción.
+Script principal para entrenamiento, evaluación y exportación
+de modelos de clasificación para predicción de riesgo de deserción.
 """
 
 import pandas as pd
 from sqlalchemy import create_engine
 import matplotlib.pyplot as plt
-from machine_learning.evaluation import evaluar_modelo
 from machine_learning.models import decision_tree, random_forest, logistic_regression
-from machine_learning.preprocessing import preparar_datos
+from machine_learning.preprocessing import preparar_datos, preparar_datos_completo
+from machine_learning.evaluation import evaluar_y_guardar, resultados_modelos, fecha_actual, evaluar_heuristico
 from heuristic_model import modelo_scoring
-from sklearn.metrics import accuracy_score, classification_report
+from sklearn.metrics import (
+    accuracy_score,
+    classification_report,
+    recall_score,
+    f1_score
+)
 from sklearn.preprocessing import StandardScaler
 
+# CONFIGURACIÓN
 scaler = StandardScaler()
-
-# conexion sql
 usuario = "root"
 password = "root"
 host = "localhost"
 database = "desercion_educativa"
 
-engine = create_engine(f'mysql+pymysql://{usuario}:{password}@{host}/{database}')
+engine = create_engine(
+    f'mysql+pymysql://{usuario}:{password}@{host}/{database}'
+)
 
-# leer la view
+# CARGA DE DATOS
+
 df = pd.read_sql("SELECT * FROM dataset_ml", engine)
+# Visualización básica
 df['riesgo_desercion'].value_counts().plot(kind='bar')
 plt.title('Distribución de Deserción')
 plt.xlabel('Categoría')
@@ -57,36 +40,102 @@ plt.ylabel('Cantidad')
 # plt.show()
 
 X_train, X_test, y_train, y_test = preparar_datos(df)
-print("------- Decision Tree -------")
-evaluar_modelo(decision_tree(), X_train, X_test, y_train, y_test)
 
-print('\n------- Random Forest --------\n')
-evaluar_modelo(random_forest(), X_train, X_test, y_train, y_test)
+# ENTRENAMIENTO MODELOS
 
-# Regresion logistica
+dt_model = evaluar_y_guardar(
+    "Decision Tree",
+    decision_tree(),
+    X_train, X_test,
+    y_train, y_test
+)
+
+rf_model = evaluar_y_guardar(
+    "Random Forest",
+    random_forest(),
+    X_train, X_test,
+    y_train, y_test
+)
+
+# Escalamiento para regresión logística
 X_train_scaled = scaler.fit_transform(X_train)
 X_test_scaled = scaler.transform(X_test)
 
-print("------- Logistic Regression -------")
-evaluar_modelo(logistic_regression(), X_train_scaled, X_test_scaled, y_train, y_test)
+lr_model = evaluar_y_guardar(
+    "Logistic Regression",
+    logistic_regression(),
+    X_train_scaled, X_test_scaled,
+    y_train, y_test
+)
 
-modelo = logistic_regression()
-modelo.fit(X_train_scaled, y_train)
 
-importancias = pd.DataFrame({
-    "variable": X_train.columns,
-    "coeficiente": modelo.coef_[0]
-})
+# PREDICCIONES COMPLETAS (LOGÍSTICA)
+
+X_full, y_full, le = preparar_datos_completo(df)
+X_full_scaled = scaler.transform(X_full)
+df["riesgo_predicho_encoded"] = lr_model.predict(X_full_scaled)
+df["riesgo_predicho"] = le.inverse_transform(df["riesgo_predicho_encoded"])
+
+# Probabilidades por clase
+probs = lr_model.predict_proba(X_full_scaled)
+for i, clase in enumerate(lr_model.classes_):
+    df[f"prob_clase_{clase}"] = probs[:, i]
+df["fecha_modelo"] = fecha_actual
+print("Accuracy global dataset completo:",
+      accuracy_score(y_full, df["riesgo_predicho_encoded"]))
+df.to_csv("predicciones_estudiantes.csv", index=False)
+
+# IMPORTANCIA DE VARIABLES (LOGÍSTICA MULTICLASE)
+
+importancias = pd.DataFrame(
+    lr_model.coef_.T,
+    columns=lr_model.classes_,
+    index=X_train.columns
+)
+importancias["impacto_total"] = importancias.abs().sum(axis=1)
+importancias = importancias.sort_values(by="impacto_total", ascending=False)
+importancias["fecha_modelo"] = fecha_actual
+def clasificar_importancia(valor):
+    if valor > 3:
+        return "Alta"
+    elif valor > 1.5:
+        return "Media"
+    else:
+        return "Baja"
+
+importancias["nivel_importancia"] = importancias["impacto_total"].apply(clasificar_importancia)
+
+importancias.to_csv("importancia_variables.csv")
+
 print(importancias)
 
-# Heurístic model test
+# MODELO HEURÍSTICO
 
-X_test_copy = X_test.copy()
-X_test_copy['riesgo_real'] = y_test.values
+evaluar_heuristico(
+    "Heuristic Scoring",
+    X_test,
+    y_test,
+    modelo_scoring
+)
 
-reverse_map = {0: 'Alto', 1: 'Bajo',2:'Medio'}
-X_test_copy['riesgo_real']=X_test_copy['riesgo_real'].map(reverse_map)
-X_test_copy['pred_scoring']=X_test_copy.apply(modelo_scoring, axis=1)
-print("------- Decision Tree -------")
-print(f'Accuracy scoring: ',accuracy_score(X_test_copy['riesgo_real'], X_test_copy['pred_scoring']))
-print(classification_report(X_test_copy['riesgo_real'], X_test_copy['pred_scoring']))
+# EXPORTAR RESULTADOS DE MODELOS
+
+df_resultados = pd.DataFrame(resultados_modelos)
+df_resultados.to_csv("model_results.csv", index=False)
+
+heuristic_acc = df_resultados[df_resultados["modelo"] == "Heuristic Scoring"]["accuracy"].values[0]
+logistic_acc = df_resultados[df_resultados["modelo"] == "Logistic Regression"]["accuracy"].values[0]
+
+comparacion = pd.DataFrame({
+    "modelo": ["Heuristic Scoring", "Logistic Regression"],
+    "accuracy": [heuristic_acc, logistic_acc],
+    "fecha_modelo": fecha_actual
+})
+
+comparacion.to_csv("heuristic_vs_logistic.csv", index=False)
+
+print("\nArchivos CSV generados correctamente:")
+print("- model_results.csv")
+print("- predicciones_estudiantes.csv")
+print("- importancia_variables.csv")
+print("- heuristic_vs_logistic.csv")
