@@ -57,8 +57,7 @@ El modelo permite análisis multidimensional y segmentación por contexto.
 
 **Diagrama ER:**  
 > Enlace a diagrama en draw.io
-> ![diagrama](https://drive.google.com/file/d/1lGCZtPIlKLAortr4YwYZS950bHEfmhZm/view)
-
+https://drive.google.com/file/d/1lGCZtPIlKLAortr4YwYZS950bHEfmhZm/view
 ---
 
 ## Diseño Analítico y Visualización
