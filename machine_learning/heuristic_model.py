@@ -33,25 +33,20 @@ def modelo_scoring(row):
         score += 3
     elif row['promedio_general']<7.5:
         score +=1
-
     if row['asistencia_porcentaje']<65:
         score += 3
     elif row['asistencia_porcentaje']<80:
         score += 1
-
     if row['materias_reprobadas'] >=3:
         score += 2
-
     if row['repitencia'] == 1:
         score += 2
 
     # Socioeconomico
     if row['apoyo_familiar'] == 0:
         score += 2
-
     if row['trabaja'] == 1:
         score += 1
-
     if row['ingreso_hogar'] < 300:
         score += 1
 

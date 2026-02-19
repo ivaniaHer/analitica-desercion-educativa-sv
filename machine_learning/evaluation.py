@@ -2,7 +2,6 @@ from sklearn.metrics import accuracy_score, classification_report, recall_score,
 from datetime import datetime
 
 fecha_actual = datetime.now().strftime("%Y-%m-%d")
-
 resultados_modelos = []
 
 def evaluar_y_guardar(nombre_modelo, modelo, X_train, X_test, y_train, y_test):

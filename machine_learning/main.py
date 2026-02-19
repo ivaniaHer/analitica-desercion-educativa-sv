@@ -11,10 +11,7 @@ from machine_learning.preprocessing import preparar_datos, preparar_datos_comple
 from machine_learning.evaluation import evaluar_y_guardar, resultados_modelos, fecha_actual, evaluar_heuristico
 from heuristic_model import modelo_scoring
 from sklearn.metrics import (
-    accuracy_score,
-    classification_report,
-    recall_score,
-    f1_score
+    accuracy_score
 )
 from sklearn.preprocessing import StandardScaler
 
@@ -30,7 +27,6 @@ engine = create_engine(
 )
 
 # CARGA DE DATOS
-
 df = pd.read_sql("SELECT * FROM dataset_ml", engine)
 # Visualización básica
 df['riesgo_desercion'].value_counts().plot(kind='bar')
@@ -42,7 +38,6 @@ plt.ylabel('Cantidad')
 X_train, X_test, y_train, y_test = preparar_datos(df)
 
 # ENTRENAMIENTO MODELOS
-
 dt_model = evaluar_y_guardar(
     "Decision Tree",
     decision_tree(),
@@ -70,7 +65,6 @@ lr_model = evaluar_y_guardar(
 
 
 # PREDICCIONES COMPLETAS (LOGÍSTICA)
-
 X_full, y_full, le = preparar_datos_completo(df)
 X_full_scaled = scaler.transform(X_full)
 df["riesgo_predicho_encoded"] = lr_model.predict(X_full_scaled)
@@ -86,7 +80,6 @@ print("Accuracy global dataset completo:",
 df.to_csv("predicciones_estudiantes.csv", index=False)
 
 # IMPORTANCIA DE VARIABLES (LOGÍSTICA MULTICLASE)
-
 importancias = pd.DataFrame(
     lr_model.coef_.T,
     columns=lr_model.classes_,
@@ -104,13 +97,11 @@ def clasificar_importancia(valor):
         return "Baja"
 
 importancias["nivel_importancia"] = importancias["impacto_total"].apply(clasificar_importancia)
-
 importancias.to_csv("importancia_variables.csv")
 
 print(importancias)
 
 # MODELO HEURÍSTICO
-
 evaluar_heuristico(
     "Heuristic Scoring",
     X_test,
@@ -119,7 +110,6 @@ evaluar_heuristico(
 )
 
 # EXPORTAR RESULTADOS DE MODELOS
-
 df_resultados = pd.DataFrame(resultados_modelos)
 df_resultados.to_csv("model_results.csv", index=False)
 

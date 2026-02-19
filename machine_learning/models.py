@@ -2,7 +2,6 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 
-
 def decision_tree():
     """
         Crea y devuelve un modelo de Árbol de Decisión para clasificación.
