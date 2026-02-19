@@ -147,9 +147,9 @@ Clasificación del riesgo de deserción mediante modelos sencillos de Machine Le
 - Google Sheets / CSV como fuente inicial  
 
 ### Base de Datos
-- MySQL / PostgreSQL  
+- MySQL  
 
-### Procesamiento y IA (fase posterior)
+### Procesamiento y IA
 - Python  
 - pandas, numpy  
 - scikit-learn  
