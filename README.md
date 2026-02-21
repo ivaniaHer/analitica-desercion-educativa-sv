@@ -56,8 +56,8 @@ La base de datos se estructura alrededor de la entidad **Estudiante**, relaciona
 El modelo permite análisis multidimensional y segmentación por contexto.
 
 **Diagrama ER:**  
-> Enlace a diagrama en draw.io (pendiente de publicación)
-
+> Enlace a diagrama en draw.io
+https://drive.google.com/file/d/1lGCZtPIlKLAortr4YwYZS950bHEfmhZm/view
 ---
 
 ## Diseño Analítico y Visualización
