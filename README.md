@@ -2,8 +2,8 @@
 
 <div align="center">
 
-![Estado del Proyecto](https://img.shields.io/badge/Estado-En%20Desarrollo-yellow)
-![Versión](https://img.shields.io/badge/Versión-0.1.0-blue)
+![Estado del Proyecto](https://img.shields.io/badge/Estado-Completo-green)
+![Versión](https://img.shields.io/badge/Versión-1.0.1-pink)
 
 **Análisis del riesgo de deserción escolar en educación media de El Salvador**
 
